@@ -555,9 +555,52 @@ export class ConversationResource extends BaseResource<ConversationModel> {
   static async dangerouslyFetchConversationModelIdsBySandboxes(
     sandboxes: Pick<SandboxResource, "id" | "workspaceId">[]
   ): Promise<Map<ModelId, ModelId>> {
-    return SandboxResource.dangerouslyFetchConversationModelIdsBySandboxes(
-      sandboxes
-    );
+    if (sandboxes.length === 0) {
+      return new Map();
+    }
+
+    const sandboxModelIdsByWorkspaceModelId = new Map<ModelId, ModelId[]>();
+    for (const sandbox of sandboxes) {
+      const sandboxModelIds =
+        sandboxModelIdsByWorkspaceModelId.get(sandbox.workspaceId) ?? [];
+      sandboxModelIds.push(sandbox.id);
+      sandboxModelIdsByWorkspaceModelId.set(
+        sandbox.workspaceId,
+        sandboxModelIds
+      );
+    }
+
+    const rows: SandboxOwnerModel[] = [];
+    for (const [
+      workspaceModelId,
+      sandboxModelIds,
+    ] of sandboxModelIdsByWorkspaceModelId.entries()) {
+      const workspaceRows = await SandboxOwnerModel.findAll({
+        where: {
+          workspaceId: workspaceModelId,
+          conversationId: {
+            [Op.ne]: null,
+          },
+          sandboxId: {
+            [Op.in]: sandboxModelIds,
+          },
+        },
+        attributes: ["sandboxId", "conversationId"],
+      });
+      rows.push(...workspaceRows);
+    }
+
+    const conversationModelIdsBySandboxModelId = new Map<ModelId, ModelId>();
+    for (const row of rows) {
+      if (row.conversationId !== null) {
+        conversationModelIdsBySandboxModelId.set(
+          row.sandboxId,
+          row.conversationId
+        );
+      }
+    }
+
+    return conversationModelIdsBySandboxModelId;
   }
 
   get forkingData(): ConversationForkingDataType | undefined {
