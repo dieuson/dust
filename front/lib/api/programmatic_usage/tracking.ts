@@ -11,6 +11,7 @@ import {
   incrementRedisKeyUsageMicroUsd,
 } from "@app/lib/api/programmatic_usage/key_cap";
 import type { Authenticator } from "@app/lib/auth";
+import { isApiKeyCapped } from "@app/lib/metronome/api_key_block";
 import { CreditResource } from "@app/lib/resources/credit_resource";
 import { RunResource } from "@app/lib/resources/run_resource";
 import { getStatsDClient } from "@app/lib/utils/statsd";
@@ -79,7 +80,8 @@ export async function checkProgrammaticUsageLimits(
     );
   }
 
-  // Then check per-key cap (not applicable to credit-priced/Metronome plans).
+  // Then check per-key cap. Legacy plans use the ES usage tally; credit-priced
+  // plans use the key's credit state (driven by Metronome per-key cap alerts).
   const plan = auth.subscription()?.plan;
   if (!plan || !isCreditPricedPlan(plan)) {
     const keyCapReached = await hasKeyReachedUsageCap(auth);
@@ -92,6 +94,22 @@ export async function checkProgrammaticUsageLimits(
       return new Err(
         new ProgrammaticUsageLimitError("rate_limit_error", message)
       );
+    }
+  } else {
+    const keyAuth = auth.key();
+    if (keyAuth) {
+      const workspace = auth.getNonNullableWorkspace();
+      const keyCapped = await isApiKeyCapped(workspace.sId, keyAuth.id);
+      if (keyCapped) {
+        const message = isAdmin
+          ? "This API key has reached its credit spend limit. " +
+            "Please increase the limit in the Developers > API Keys section of the Dust dashboard."
+          : "This API key has reached its credit spend limit. " +
+            "Please ask a Dust workspace admin to increase the limit.";
+        return new Err(
+          new ProgrammaticUsageLimitError("rate_limit_error", message)
+        );
+      }
     }
   }
 
