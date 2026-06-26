@@ -351,6 +351,11 @@ export const WHITELISTABLE_FEATURES_CONFIG = {
       "Whitelabel frames: customize the workspace logo, favicon and OG image shown on shared Frames.",
     stage: "on_demand",
   },
+  input_bar_model_picker: {
+    description:
+      "Model picker in the conversation input bar: pick a model tier (Fast, Balanced, Powerful, Frontier) or a specific model.",
+    stage: "dust_only",
+  },
 } as const satisfies Record<string, FeatureFlag>;
 
 export type FeatureFlagStage = "dust_only" | "rolling_out" | "on_demand";
