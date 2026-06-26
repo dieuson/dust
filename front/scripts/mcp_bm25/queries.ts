@@ -570,6 +570,32 @@ export const QUERIES: LabeledQuery[] = [
     expected: "salesforce.read_attachment",
   },
 
+  // --- query_tables_v2 ---
+  {
+    query: "show me the tables this agent can query",
+    expected: "query_tables_v2.list_tables",
+  },
+  {
+    query: "find the available datasets and table uris",
+    expected: "query_tables_v2.list_tables",
+  },
+  {
+    query: "what columns are in the revenue table",
+    expected: "query_tables_v2.get_database_schema",
+  },
+  {
+    query: "get the schema before writing a database query",
+    expected: "query_tables_v2.get_database_schema",
+  },
+  {
+    query: "run sql to analyze revenue by month",
+    expected: "query_tables_v2.execute_database_query",
+  },
+  {
+    query: "execute a database query and save the results",
+    expected: "query_tables_v2.execute_database_query",
+  },
+
   // --- cross-server (no platform named) ---
   {
     query: "create a support ticket",
