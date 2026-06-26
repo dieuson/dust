@@ -10,9 +10,10 @@ import {
 import type { SpaceResource } from "@app/lib/resources/space_resource";
 import { SandboxOwnerModel } from "@app/lib/resources/storage/models/sandbox";
 import { withTransaction } from "@app/lib/utils/sql_utils";
+import type { ModelId } from "@app/types/shared/model_id";
 import type { Result } from "@app/types/shared/result";
 import assert from "assert";
-import type { Transaction } from "sequelize";
+import { Op, type Transaction } from "sequelize";
 
 export class PodSandboxResource {
   private static assertPod(space: SpaceResource) {
@@ -189,5 +190,53 @@ export class PodSandboxResource {
       auth,
       this.toSandboxLifecycleOwner(auth, pod)
     );
+  }
+
+  static async dangerouslyFetchPodModelIdsBySandboxes(
+    sandboxes: Pick<SandboxResource, "id" | "workspaceId">[]
+  ): Promise<Map<ModelId, ModelId>> {
+    if (sandboxes.length === 0) {
+      return new Map();
+    }
+
+    const sandboxModelIdsByWorkspaceModelId = new Map<ModelId, ModelId[]>();
+    for (const sandbox of sandboxes) {
+      const sandboxModelIds =
+        sandboxModelIdsByWorkspaceModelId.get(sandbox.workspaceId) ?? [];
+      sandboxModelIds.push(sandbox.id);
+      sandboxModelIdsByWorkspaceModelId.set(
+        sandbox.workspaceId,
+        sandboxModelIds
+      );
+    }
+
+    const rows: SandboxOwnerModel[] = [];
+    for (const [
+      workspaceModelId,
+      sandboxModelIds,
+    ] of sandboxModelIdsByWorkspaceModelId.entries()) {
+      const workspaceRows = await SandboxOwnerModel.findAll({
+        where: {
+          workspaceId: workspaceModelId,
+          spaceId: {
+            [Op.ne]: null,
+          },
+          sandboxId: {
+            [Op.in]: sandboxModelIds,
+          },
+        },
+        attributes: ["sandboxId", "spaceId"],
+      });
+      rows.push(...workspaceRows);
+    }
+
+    const podModelIdsBySandboxModelId = new Map<ModelId, ModelId>();
+    for (const row of rows) {
+      if (row.spaceId !== null) {
+        podModelIdsBySandboxModelId.set(row.sandboxId, row.spaceId);
+      }
+    }
+
+    return podModelIdsBySandboxModelId;
   }
 }
