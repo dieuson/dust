@@ -26,11 +26,14 @@ import { RunResource } from "@app/lib/resources/run_resource";
 import {
   type ConversationSandboxOwner,
   type EnsureSandboxResult,
+  type SandboxCreateBlob,
+  type SandboxCreateOwner,
   SandboxResource,
 } from "@app/lib/resources/sandbox_resource";
 import { SpaceResource } from "@app/lib/resources/space_resource";
 import { frontSequelize } from "@app/lib/resources/storage";
 import { ContentFragmentModel } from "@app/lib/resources/storage/models/content_fragment";
+import { SandboxOwnerModel } from "@app/lib/resources/storage/models/sandbox";
 import { UserModel } from "@app/lib/resources/storage/models/user";
 import { WakeUpModel } from "@app/lib/resources/storage/models/wakeup";
 import type { ReadonlyAttributesType } from "@app/lib/resources/storage/types";
@@ -361,6 +364,37 @@ export class ConversationResource extends BaseResource<ConversationModel> {
     return SandboxResource.fetchByConversation(auth, conversation);
   }
 
+  private static toSandboxCreateOwner(
+    auth: Authenticator,
+    conversation: ConversationSandboxOwner
+  ): SandboxCreateOwner {
+    const workspaceModelId = auth.getNonNullableWorkspace().id;
+
+    return {
+      lockKey: conversation.sId,
+      envVars: { CONVERSATION_ID: conversation.sId },
+      logLabel: "conversation",
+      fetchSandbox: () => ConversationResource.fetchSandbox(auth, conversation),
+      createSandbox: (blob: SandboxCreateBlob) =>
+        withTransaction(async (transaction) => {
+          const sandbox = await SandboxResource.makeNew(auth, blob, {
+            transaction,
+          });
+
+          await SandboxOwnerModel.create(
+            {
+              workspaceId: workspaceModelId,
+              conversationId: conversation.id,
+              sandboxId: sandbox.id,
+            },
+            { transaction }
+          );
+
+          return sandbox;
+        }),
+    };
+  }
+
   async fetchSandbox(auth: Authenticator): Promise<SandboxResource | null> {
     return ConversationResource.fetchSandbox(auth, this);
   }
@@ -369,7 +403,10 @@ export class ConversationResource extends BaseResource<ConversationModel> {
     auth: Authenticator,
     conversation: ConversationSandboxOwner
   ): Promise<Result<EnsureSandboxResult, Error>> {
-    return SandboxResource.ensureActive(auth, conversation);
+    return SandboxResource.ensureActive(
+      auth,
+      this.toSandboxCreateOwner(auth, conversation)
+    );
   }
 
   async ensureSandboxActive(
