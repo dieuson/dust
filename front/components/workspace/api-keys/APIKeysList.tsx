@@ -19,6 +19,7 @@ type APIKeysListProps = {
   onRevoke: (key: KeyType) => Promise<void>;
   onEditCap: (key: KeyType) => void;
   showLegacyUsdMonthlyCap: boolean;
+  showCreditMonthlyCap: boolean;
 };
 
 const getKeySpaces = (
@@ -56,6 +57,7 @@ export const APIKeysList = ({
   onRevoke,
   onEditCap,
   showLegacyUsdMonthlyCap,
+  showCreditMonthlyCap,
 }: APIKeysListProps) => {
   return (
     <div className="space-y-4 divide-y divide-gray-200 dark:divide-gray-200-night">
@@ -77,6 +79,11 @@ export const APIKeysList = ({
                       >
                         {key.status === "active" ? "active" : "revoked"}
                       </p>
+                      {showCreditMonthlyCap && key.creditState === "capped" && (
+                        <p className="mb-0.5 ml-1 inline-flex rounded-full bg-red-100 px-2 text-xs font-semibold leading-5 text-red-800">
+                          capped
+                        </p>
+                      )}
                     </div>
                     <div className="dd-privacy-mask">
                       <p
@@ -129,6 +136,21 @@ export const APIKeysList = ({
                           </strong>
                         </p>
                       )}
+                      {showCreditMonthlyCap && (
+                        <p
+                          className={cn(
+                            "truncate font-mono text-sm",
+                            "text-muted-foreground dark:text-muted-foreground-night"
+                          )}
+                        >
+                          Monthly credit cap:{" "}
+                          <strong>
+                            {key.monthlyCapAwuCredits !== null
+                              ? `${key.monthlyCapAwuCredits} credits`
+                              : "Unlimited"}
+                          </strong>
+                        </p>
+                      )}
                       <pre className="text-sm">{key.secret}</pre>
                       <p
                         className={cn(
@@ -166,7 +188,7 @@ export const APIKeysList = ({
               </div>
               {key.status === "active" ? (
                 <div className="flex gap-2">
-                  {showLegacyUsdMonthlyCap && (
+                  {(showLegacyUsdMonthlyCap || showCreditMonthlyCap) && (
                     <Button
                       variant="outline"
                       disabled={isRevoking || isGenerating}
