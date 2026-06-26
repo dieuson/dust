@@ -570,6 +570,40 @@ export const QUERIES: LabeledQuery[] = [
     expected: "salesforce.read_attachment",
   },
 
+  // --- data_warehouses ---
+  {
+    query: "show me the available data warehouses",
+    expected: "data_warehouses.list",
+  },
+  {
+    query: "browse the schemas in our revenue warehouse",
+    expected: "data_warehouses.list",
+  },
+  {
+    query: "find customer tables in the data warehouse",
+    expected: "data_warehouses.find",
+  },
+  {
+    query: "search warehouse tables named invoices",
+    expected: "data_warehouses.find",
+  },
+  {
+    query: "describe the schema and columns for this warehouse table",
+    expected: "data_warehouses.describe_tables",
+  },
+  {
+    query: "show sample rows from a data warehouse table before writing sql",
+    expected: "data_warehouses.describe_tables",
+  },
+  {
+    query: "run a sql query against these data warehouse tables",
+    expected: "data_warehouses.query",
+  },
+  {
+    query: "calculate monthly revenue by querying warehouse tables",
+    expected: "data_warehouses.query",
+  },
+
   // --- cross-server (no platform named) ---
   {
     query: "create a support ticket",

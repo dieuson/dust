@@ -12,6 +12,7 @@
 // Usage: npx tsx scripts/mcp_bm25/run.ts   (from the front/ directory)
 
 import { CONFLUENCE_SERVER } from "@app/lib/api/actions/servers/confluence/metadata";
+import { DATA_WAREHOUSES_SERVER } from "@app/lib/api/actions/servers/data_warehouses/metadata";
 import { FRESHSERVICE_SERVER } from "@app/lib/api/actions/servers/freshservice/metadata";
 import { FRONT_SERVER } from "@app/lib/api/actions/servers/front/metadata";
 import { GOOGLE_DRIVE_SERVER } from "@app/lib/api/actions/servers/google_drive/metadata";
@@ -41,6 +42,7 @@ const SERVERS: ServerEntry[] = [
   { name: "confluence", tools: CONFLUENCE_SERVER.tools },
   { name: "hubspot", tools: HUBSPOT_SERVER.tools },
   { name: "salesforce", tools: SALESFORCE_SERVER.tools },
+  { name: "data_warehouses", tools: DATA_WAREHOUSES_SERVER.tools },
 ];
 
 function out(line: string): void {
