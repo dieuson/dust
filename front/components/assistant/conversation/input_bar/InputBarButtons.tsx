@@ -248,8 +248,6 @@ export const InputBarButtons = React.memo(function InputBarButtons({
         />
       </>
     );
-  // Gated behind the `input_bar_model_picker` feature flag (handled inside the
-  // component, which renders null when the flag is off).
   const modelPickerButton = (
     <InputBarModelPicker
       owner={owner}

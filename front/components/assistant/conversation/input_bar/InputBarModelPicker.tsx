@@ -1,6 +1,5 @@
 import { getModelProviderLogo } from "@app/components/providers/types";
 import { useTheme } from "@app/components/sparkle/ThemeContext";
-import { useFeatureFlags } from "@app/lib/auth/AuthContext";
 import { useModels } from "@app/lib/swr/models";
 import { useIsMobile } from "@app/lib/swr/useIsMobile";
 import { getProviderDisplayName } from "@app/types/assistant/models/providers";
@@ -231,7 +230,6 @@ export function InputBarModelPicker({
   buttonSize,
   disabled,
 }: InputBarModelPickerProps) {
-  const { hasFeature } = useFeatureFlags();
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
   const [state, setState] = useState<PickerState>({
@@ -239,10 +237,6 @@ export function InputBarModelPicker({
     tierIndex: 1,
     model: null,
   });
-
-  if (!hasFeature("input_bar_model_picker")) {
-    return null;
-  }
 
   return (
     // Non-modal: a modal popover scroll-locks the body (shifting the layout)
