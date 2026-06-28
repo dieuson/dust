@@ -494,7 +494,6 @@ function TriggerEditView({
           )}
           {currentPageId === "schedule-edition" && (
             <ScheduleEditionSheetContent
-              owner={owner}
               trigger={editTrigger?.kind === "schedule" ? editTrigger : null}
               isEditor={isEditor}
             />

@@ -264,7 +264,6 @@ export function TriggerViewsSheet({
       icon: () => getAvatarFromIcon("ActionTimeIcon"),
       content: (
         <ScheduleEditionSheetContent
-          owner={owner}
           trigger={editTrigger?.kind === "schedule" ? editTrigger : null}
           isEditor={isEditor}
         />
