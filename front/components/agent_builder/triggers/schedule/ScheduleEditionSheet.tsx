@@ -1,7 +1,6 @@
 import type { AgentBuilderScheduleTriggerType } from "@app/components/agent_builder/AgentBuilderFormContext";
 import { ScheduleEditionScheduler } from "@app/components/agent_builder/triggers/schedule/ScheduleEditionScheduler";
 import type { TriggerViewsSheetFormValues } from "@app/components/agent_builder/triggers/triggerViewsSheetFormSchema";
-import type { LightWorkspaceType } from "@app/types/user";
 import {
   ContentMessage,
   Input,
@@ -98,13 +97,11 @@ function ScheduleEditionMessageInput({
 }
 
 interface ScheduleEditionSheetContentProps {
-  owner: LightWorkspaceType;
   trigger: AgentBuilderScheduleTriggerType | null;
   isEditor: boolean;
 }
 
 export function ScheduleEditionSheetContent({
-  owner,
   trigger,
   isEditor,
 }: ScheduleEditionSheetContentProps) {
@@ -125,7 +122,7 @@ export function ScheduleEditionSheetContent({
           <ScheduleEditionNameInput isEditor={isEditor} />
           <ScheduleEditionStatusToggle isEditor={isEditor} />
         </div>
-        <ScheduleEditionScheduler isEditor={isEditor} owner={owner} />
+        <ScheduleEditionScheduler isEditor={isEditor} />
         <Separator />
         <ScheduleEditionMessageInput isEditor={isEditor} />
       </div>
